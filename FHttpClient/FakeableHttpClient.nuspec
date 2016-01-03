@@ -17,6 +17,6 @@
     </dependencies> 
   </metadata>
   <files>
-	<file src="FHttpClient\bin\$configuration$\FakeableHttpClient.dll" target="lib\net40\" />
+	<file src="bin\$configuration$\FakeableHttpClient.dll" target="lib\net40\" />
   </files>
 </package>
