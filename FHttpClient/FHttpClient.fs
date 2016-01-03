@@ -30,10 +30,10 @@ type internal FHttpClientHandler(inner:HttpMessageHandler) =
         inner.GetType().GetMethod("SendAsync", BindingFlags.NonPublic ||| BindingFlags.Instance)
     override this.SendAsync(request, cancellationToken) : Task<HttpResponseMessage> =
         let response = match state.GetInterceptor() with 
-        | None -> sendAsync.Invoke(inner, [|request; cancellationToken|]) :?> Task<HttpResponseMessage> 
-        | Some i -> async { 
-            let response = i.GetNextResponse(request) 
-            return response } |> Async.StartAsTask
+            | None -> sendAsync.Invoke(inner, [|request; cancellationToken|]) :?> Task<HttpResponseMessage> 
+            | Some i -> async { 
+                let response = i.GetNextResponse(request) 
+                return response } |> Async.StartAsTask
         response
             
 type FHttpClient(handler, disposeHandler) =

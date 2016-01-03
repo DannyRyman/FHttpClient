@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>FakeableHttpClient</id>
+    <version>$version$</version>
+    <title>Fakeable Http Client (FHttpClient)</title>
+    <authors>ProqualIT, Dan Ryan</authors>
+    <owners>Dan Ryan</owners>
+    <licenseUrl>https://github.com/DannyRyman/FHttpClient/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/DannyRyman/FHttpClient</projectUrl>    
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A fakeable http client. Allows unit tests to intercept requests and replace them with pre-configured responses. This is useful for stubbing out external services.</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright &#x00A9; ProqualIT Ltd.  All rights reserved.</copyright>
+    <tags>HttpClient FHttpClient Fakeable Fake Intercept Requests Responses</tags>
+	<dependencies>
+    </dependencies> 
+  </metadata>
+  <files>
+	<file src="FHttpClient\bin\$configuration$\FakeableHttpClient.dll" target="lib\net40\" />
+  </files>
+</package>
