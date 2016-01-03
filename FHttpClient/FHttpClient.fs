@@ -25,12 +25,10 @@ module internal state =
         CallContext.FreeNamedDataSlot(key)
 
 type internal FHttpClientHandler(inner:HttpMessageHandler) =
-    inherit HttpMessageHandler()
-    let sendAsync : MethodInfo = 
-        inner.GetType().GetMethod("SendAsync", BindingFlags.NonPublic ||| BindingFlags.Instance)
+    inherit DelegatingHandler(inner)    
     override this.SendAsync(request, cancellationToken) : Task<HttpResponseMessage> =
         let response = match state.GetInterceptor() with 
-            | None -> sendAsync.Invoke(inner, [|request; cancellationToken|]) :?> Task<HttpResponseMessage> 
+            | None -> this.SendAsync(request, cancellationToken)
             | Some i -> async { 
                 let response = i.GetNextResponse(request) 
                 return response } |> Async.StartAsTask
