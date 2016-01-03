@@ -28,3 +28,8 @@ type FakeableHttpClientFixture() =
             let actualException = aggregateException.InnerExceptions |> Seq.head     
             Assert.That(actualException.Message, Is.EqualTo("An call was encounted that could not be matched. HttpMethod: GET; Url: http://someurl.com/"))
         )
+
+    [<Test>]
+    member this.``must be able to make real calls``() =
+        let response = client.GetAsync("http://www.google.com").Result
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK))

@@ -28,7 +28,7 @@ type internal FHttpClientHandler(inner:HttpMessageHandler) =
     inherit DelegatingHandler(inner)    
     override this.SendAsync(request, cancellationToken) : Task<HttpResponseMessage> =
         let response = match state.GetInterceptor() with 
-            | None -> this.SendAsync(request, cancellationToken)
+            | None -> base.SendAsync(request, cancellationToken)
             | Some i -> async { 
                 let response = i.GetNextResponse(request) 
                 return response } |> Async.StartAsTask
