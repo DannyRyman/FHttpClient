@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FakeableHttpClient", "FHttpClient\FakeableHttpClient.fsproj", "{7720E437-989A-43DB-B602-5E2230FE21C4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{9DB10D37-82A1-4FB0-B7F2-6BF098003FDF}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FakeableHttpClientFixtures", "FakeableHttpClientFixtures\FakeableHttpClientFixtures.fsproj", "{DAA83AB8-996C-4073-BBF0-6922AD2F79B6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7720E437-989A-43DB-B602-5E2230FE21C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7720E437-989A-43DB-B602-5E2230FE21C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7720E437-989A-43DB-B602-5E2230FE21C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7720E437-989A-43DB-B602-5E2230FE21C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAA83AB8-996C-4073-BBF0-6922AD2F79B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAA83AB8-996C-4073-BBF0-6922AD2F79B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAA83AB8-996C-4073-BBF0-6922AD2F79B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAA83AB8-996C-4073-BBF0-6922AD2F79B6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DAA83AB8-996C-4073-BBF0-6922AD2F79B6} = {9DB10D37-82A1-4FB0-B7F2-6BF098003FDF}
+	EndGlobalSection
+EndGlobal
