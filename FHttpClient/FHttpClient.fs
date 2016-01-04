@@ -80,3 +80,5 @@ type HttpInterceptor() as this =
         let expectedRequest = { httpMethod = httpMethod; urlRegEx = new Regex(urlRegEx, RegexOptions.CultureInvariant ||| RegexOptions.IgnoreCase)}         
         HttpInterceptorRequestSetup(configuredResponses, expectedRequest)
 
+    member this.Dispose() = (this :> IDisposable).Dispose()
+
