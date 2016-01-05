@@ -10,8 +10,10 @@ open System.Runtime.Remoting.Messaging
 open System.Text.RegularExpressions
 open System.Collections.Generic
 
+
 type internal IRetrieveRecordedResponses = 
     abstract member GetNextResponse : HttpRequestMessage -> HttpResponseMessage
+
 
 module internal state =
     let key = "interceptor"
@@ -19,39 +21,42 @@ module internal state =
         CallContext.LogicalSetData(key, interceptor)
     let GetInterceptor() =
         let interceptor = CallContext.LogicalGetData(key)
-        let interceptorOption = match interceptor with null -> None | _ -> Some(interceptor :?> IRetrieveRecordedResponses)  
-        interceptorOption
+        match interceptor with :? IRetrieveRecordedResponses as x -> Some x | _ -> None
     let RemoveInterceptor() =
         CallContext.FreeNamedDataSlot(key)
+
 
 type internal FHttpClientHandler(inner:HttpMessageHandler) =
     inherit DelegatingHandler(inner)    
     override this.SendAsync(request, cancellationToken) : Task<HttpResponseMessage> =
-        let response = match state.GetInterceptor() with 
-            | None -> base.SendAsync(request, cancellationToken)
-            | Some i -> async { 
-                let response = i.GetNextResponse(request) 
-                return response } |> Async.StartAsTask
-        response
+        match state.GetInterceptor() with 
+        | None -> base.SendAsync(request, cancellationToken)
+        | Some i -> Task.FromResult(i.GetNextResponse(request))
+         
             
 type FHttpClient(handler, disposeHandler) =
     inherit HttpClient(new FHttpClientHandler(handler), disposeHandler)    
     new(handler) = new FHttpClient(handler, true)
     new() = new FHttpClient(new HttpClientHandler(), true)
 
+
 type internal ExpectedRequest = { httpMethod : HttpMethod; urlRegEx : Regex }
 
+
 type internal ConfiguredResponseEntry = { Request : ExpectedRequest; Response : HttpResponseMessage }
+
 
 type HttpInterceptorRequestSetup internal (configuredResponses : List<ConfiguredResponseEntry>, request : ExpectedRequest) =    
     member this.RespondWith(response:HttpResponseMessage) =
         let configuredResponse = { Request = request; Response = response}
         configuredResponses.Add(configuredResponse)        
 
+
 exception FHttpClientException of string
     with 
         override this.Message =           
             this.Data0
+
 
 type HttpInterceptor() as this =
     do state.SetInterceptor(this)
@@ -81,4 +86,7 @@ type HttpInterceptor() as this =
         HttpInterceptorRequestSetup(configuredResponses, expectedRequest)
 
     member this.Dispose() = (this :> IDisposable).Dispose()
+
+
+
 

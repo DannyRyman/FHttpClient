@@ -22,11 +22,11 @@ type FakeableHttpClientFixture() =
     [<Test>]
     member this.``must raise a meaningful exception when no request was matched``() =        
         using (new HttpInterceptor()) ( fun interceptor ->            
-            let aggregateException = Assert.Throws<AggregateException>(fun() -> 
+            let thrownException = Assert.Throws<FHttpClientException>(fun() -> 
                 client.GetAsync("http://someurl.com").Result |> ignore                                                
                 )       
-            let actualException = aggregateException.InnerExceptions |> Seq.head     
-            Assert.That(actualException.Message, Is.EqualTo("An call was encounted that could not be matched. HttpMethod: GET; Url: http://someurl.com/"))
+       
+            Assert.That(thrownException.Message, Is.EqualTo("An call was encounted that could not be matched. HttpMethod: GET; Url: http://someurl.com/"))
         )
 
     [<Test>]
