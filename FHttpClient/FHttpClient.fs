@@ -40,7 +40,19 @@ type FHttpClient(handler, disposeHandler) =
     new() = new FHttpClient(new HttpClientHandler(), true)
 
 
-type internal ExpectedRequest = { httpMethod : HttpMethod; urlRegEx : Regex }
+module internal regexHelper =
+    let stripExcessWhitespace (strValue:string) = 
+        let regex = new Regex(@"\s+(?=([^""]*""[^""]*"")*[^""]*$)") // \s+(?=([^"]*"[^"]*")*[^"]*$)
+        regex.Replace(strValue.Trim(), "")    
+    let buildLiteralRegex literalString : Regex =          
+        literalString 
+        |> stripExcessWhitespace
+        |> Regex.Escape       
+        |> sprintf "^%s$"
+        |> fun str -> new Regex(str, RegexOptions.IgnoreCase)
+
+
+type internal ExpectedRequest = { httpMethod : HttpMethod; urlRegEx : Regex; requestContentRegex : Regex option }
 
 
 type internal ConfiguredResponseEntry = { Request : ExpectedRequest; Response : HttpResponseMessage }
@@ -49,7 +61,13 @@ type internal ConfiguredResponseEntry = { Request : ExpectedRequest; Response : 
 type HttpInterceptorRequestSetup internal (configuredResponses : List<ConfiguredResponseEntry>, request : ExpectedRequest) =    
     member this.RespondWith(response:HttpResponseMessage) =
         let configuredResponse = { Request = request; Response = response}
-        configuredResponses.Add(configuredResponse)        
+        configuredResponses.Add(configuredResponse)   
+    member this.WithRequestContentMatching(contentMatchRegEx:Regex) =
+        let expectedRequestWithContent = { httpMethod = request.httpMethod; urlRegEx = request.urlRegEx; requestContentRegex = Some(contentMatchRegEx) }
+        HttpInterceptorRequestSetup(configuredResponses, expectedRequestWithContent)
+    member this.WithRequestContentMatching(contentMatch:string) =        
+        let literalMatchRegex = regexHelper.buildLiteralRegex contentMatch
+        this.WithRequestContentMatching(literalMatchRegex)
 
 
 exception FHttpClientException of string
@@ -67,7 +85,14 @@ type HttpInterceptor() as this =
         member this.GetNextResponse(request : HttpRequestMessage) = 
             let nextResponse = 
                 configuredResponses 
-                |> Seq.where (fun c -> c.Request.httpMethod = request.Method && c.Request.urlRegEx.IsMatch(request.RequestUri.AbsoluteUri))
+                |> Seq.where (fun c -> c.Request.httpMethod = request.Method 
+                                    && c.Request.urlRegEx.IsMatch(request.RequestUri.AbsoluteUri)
+                                    && match c.Request.requestContentRegex with 
+                                        | option.None -> true
+                                        | option.Some regex -> 
+                                            let resultWithoutWhitespace = regexHelper.stripExcessWhitespace(request.Content.ReadAsStringAsync().Result)
+                                            regex.IsMatch(resultWithoutWhitespace)
+                                    )
                 |> Seq.tryLast
             match nextResponse with
                 | None -> 
@@ -81,8 +106,11 @@ type HttpInterceptor() as this =
             configuredResponses.Clear()
             state.RemoveInterceptor()
     
-    member this.ForRequestMatching(httpMethod : HttpMethod, urlRegEx : string) =
-        let expectedRequest = { httpMethod = httpMethod; urlRegEx = new Regex(urlRegEx, RegexOptions.CultureInvariant ||| RegexOptions.IgnoreCase)}         
+    member this.ForRequestMatching(httpMethod : HttpMethod, url : string) =
+        this.ForRequestMatching(httpMethod, regexHelper.buildLiteralRegex(url))        
+
+    member this.ForRequestMatching(httpMethod : HttpMethod, urlRegex : Regex) =
+        let expectedRequest = { httpMethod = httpMethod; urlRegEx = urlRegex; requestContentRegex = None }         
         HttpInterceptorRequestSetup(configuredResponses, expectedRequest)
 
     member this.Dispose() = (this :> IDisposable).Dispose()
