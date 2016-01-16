@@ -19,6 +19,27 @@ type FakeableHttpClientFixture() =
             let response = client.GetAsync("http://someurl.com").Result
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden))
         ) 
+
+    [<Test>]
+    member this.``must record requests``() =
+        using (new HttpInterceptor()) ( fun interceptor ->
+            interceptor.ForRequestMatching(HttpMethod.Get, "http://someurl.com/")
+                .RespondWith(new HttpResponseMessage(HttpStatusCode.Forbidden))
+
+            let request = new HttpRequestMessage(HttpMethod.Post, "http://someurl.com/")
+            request.Content <- new StringContent("test")
+
+            let response = client.GetAsync("http://someurl.com").Result
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden))
+
+            //let mySeq = { 0 .. 10 }
+            Assert.That(Seq.length interceptor.RequestsLogged, Is.EqualTo(1))
+            
+
+            //let x = Seq.length interceptor.RequestsLogged 
+            //printf x
+            //Assert.That(, Is.EqualTo(1))
+        )
     
     [<Test>]
     member this.``must be able to match on request content using regex (no match found)``() =

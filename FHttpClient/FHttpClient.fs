@@ -80,9 +80,11 @@ type HttpInterceptor() as this =
     do state.SetInterceptor(this)
     
     let configuredResponses = new List<ConfiguredResponseEntry>()   
+    let requestsLogged = new List<HttpRequestMessage>()
 
     interface IRetrieveRecordedResponses with
-        member this.GetNextResponse(request : HttpRequestMessage) = 
+        member this.GetNextResponse(request : HttpRequestMessage) =             
+            requestsLogged.Add(request)
             let nextResponse = 
                 configuredResponses 
                 |> Seq.where (fun c -> c.Request.httpMethod = request.Method 
@@ -112,6 +114,8 @@ type HttpInterceptor() as this =
     member this.ForRequestMatching(httpMethod : HttpMethod, urlRegex : Regex) =
         let expectedRequest = { httpMethod = httpMethod; urlRegEx = urlRegex; requestContentRegex = None }         
         HttpInterceptorRequestSetup(configuredResponses, expectedRequest)
+
+    member this.RequestsLogged with get() : seq<HttpRequestMessage> = requestsLogged :> seq<HttpRequestMessage> 
 
     member this.Dispose() = (this :> IDisposable).Dispose()
 
