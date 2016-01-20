@@ -16,10 +16,8 @@ open System.Net.Http
 open System.Collections.Generic
 open System.Linq
 
-let mySeq = new List<HttpRequestMessage>().As
+//let mySeq = new List<HttpRequestMessage>().As
 //let mySeq = seq { for i in 0 .. 10 do yield new HttpRequestMessage() }
-let length = Seq.length mySeq
-printf "%d" length
 
 
 

@@ -1,6 +1,7 @@
 ﻿namespace FakeableHttpClient
 
 open System
+open System.IO
 open System.Net.Http
 open System.Threading.Tasks
 open System.Net.Http.Headers
@@ -76,6 +77,27 @@ exception FHttpClientException of string
             this.Data0
 
 
+module internal httpHelper =
+    let cloneHttpRequest (request:HttpRequestMessage) = 
+        let clonedRequest = new HttpRequestMessage(request.Method, request.RequestUri)
+        let ms = new MemoryStream()        
+        if request.Content <> null then
+            async {
+                do! Async.AwaitTask(request.Content.CopyToAsync(ms))
+                ms.Position <- 0L
+                clonedRequest.Content <- new StreamContent(ms)
+            } |> Async.RunSynchronously   
+            request.Content.Headers
+                |> Option.ofObj
+                |> Option.iter(Seq.iter (fun h -> clonedRequest.Content.Headers.Add(h.Key, h.Value)))                     
+        clonedRequest.Version <- request.Version
+        request.Properties 
+            |> Seq.iter (fun h -> clonedRequest.Properties.Add(h.Key, h.Value))
+        request.Headers
+            |> Seq.iter (fun h -> clonedRequest.Headers.Add(h.Key, h.Value))
+        clonedRequest
+
+
 type HttpInterceptor() as this =
     do state.SetInterceptor(this)
     
@@ -84,7 +106,7 @@ type HttpInterceptor() as this =
 
     interface IRetrieveRecordedResponses with
         member this.GetNextResponse(request : HttpRequestMessage) =             
-            requestsLogged.Add(request)
+            requestsLogged.Add(httpHelper.cloneHttpRequest request)
             let nextResponse = 
                 configuredResponses 
                 |> Seq.where (fun c -> c.Request.httpMethod = request.Method 
